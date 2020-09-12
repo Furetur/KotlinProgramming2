@@ -19,15 +19,16 @@ object InitialStateParser {
     }
 
     private fun parseOperatingSystems(state: InitialState): Map<String, OperatingSystem> =
-        state.os.mapValues { OperatingSystem(it.key, it.value.name, it.value.infectionPercentageChance) }
+            state.os.mapValues { OperatingSystem(it.key, it.value.name, it.value.infectionPercentageChance) }
 
     private fun parseComputers(state: InitialState): List<LocalNetwork.Computer> {
         val operatingSystems = parseOperatingSystems(state)
-        return state.computers.map {
+        return state.computers.mapIndexed { id, config ->
             LocalNetwork.Computer(
-                operatingSystems[it.os] ?: throw OperatingSystemIsNotDefinedException(
-                    it.os
-                ), it.infected ?: false
+                    id,
+                    operatingSystems[config.os] ?: throw OperatingSystemIsNotDefinedException(
+                            config.os
+                    ), config.infected ?: false
             )
         }
     }

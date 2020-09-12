@@ -48,7 +48,7 @@ class LocalNetwork(val computers: List<Computer>, val graph: Graph) {
 
         val outcome = Random.nextInt(
                 1,
-                Companion.MAX_PERCENTAGE
+                MAX_PERCENTAGE
         )
         return if (outcome <= node.computer.os.infectionPercentageChance) {
             node.isInfected = true
@@ -90,7 +90,7 @@ class LocalNetwork(val computers: List<Computer>, val graph: Graph) {
 
     class AlreadyInfectedError : IllegalStateException()
 
-    data class Computer(val os: OperatingSystem, val isInitiallyInfected: Boolean)
+    data class Computer(val id: Int, val os: OperatingSystem, val isInitiallyInfected: Boolean)
 
     class NumberOfComputersIsNotEqualToNumberOfVertices : IllegalArgumentException()
 }

@@ -12,9 +12,9 @@ internal class LocalNetworkTest {
     private val linux = OperatingSystem("linux", "Arch Linux (nerds only)", 50)
     private val mac = OperatingSystem("mac", "MacOS", 0)
 
-    private fun makeWinPc(infected: Boolean = false): LocalNetwork.Computer = LocalNetwork.Computer(windows, infected)
-    private fun makeLinuxPc(infected: Boolean = false): LocalNetwork.Computer = LocalNetwork.Computer(linux, infected)
-    private fun makeMacOsPc(infected: Boolean = false): LocalNetwork.Computer = LocalNetwork.Computer(mac, infected)
+    private fun makeWinPc(infected: Boolean = false): LocalNetwork.Computer = LocalNetwork.Computer(0, windows, infected)
+    private fun makeLinuxPc(infected: Boolean = false): LocalNetwork.Computer = LocalNetwork.Computer(1, linux, infected)
+    private fun makeMacOsPc(infected: Boolean = false): LocalNetwork.Computer = LocalNetwork.Computer(2, mac, infected)
 
     private val simpleGraph = Graph(
             listOf(
@@ -124,6 +124,36 @@ internal class LocalNetworkTest {
         }
 
         val expected = (computers.subList(0, steps + 1) + computers.subList(1000 - steps - 1, 1000)).toSet()
+        assertEquals(expected, network.infectedComputers.toSet())
+    }
+
+    @Test
+    fun `computers should be infected step by step in a small circular network`() {
+        val network = CircularWindowsNetworkGenerator.makeNetwork(10)
+        val computers = network.computers
+
+        val steps = 2
+
+        for (i in 0 until steps) {
+            network.trySpreadVirus()
+        }
+
+        val expected = (computers.subList(0, steps + 1) + computers.subList(computers.size - steps, computers.size)).toSet()
+        assertEquals(expected, network.infectedComputers.toSet())
+    }
+
+    @Test
+    fun `computers should be infected step by step in a big circular network`() {
+        val network = CircularWindowsNetworkGenerator.makeNetwork(1000)
+        val computers = network.computers
+
+        val steps = 500
+
+        for (i in 0 until steps) {
+            network.trySpreadVirus()
+        }
+
+        val expected = (computers.subList(0, steps + 1) + computers.subList(computers.size - steps, computers.size)).toSet()
         assertEquals(expected, network.infectedComputers.toSet())
     }
 }

@@ -69,7 +69,7 @@ internal class GraphTest {
     }
 
     @Test
-    fun `should calculate neightbours correctly in simple matrix`() {
+    fun `should calculate neighbours correctly in simple matrix`() {
         val matrix = listOf(
             listOf(0, 0),
             listOf(1, 0)
