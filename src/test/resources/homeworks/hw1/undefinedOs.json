@@ -1,0 +1,45 @@
+{
+  "os":{
+    "linux": {
+      "name": "Linux",
+      "infectionPercentageChance": 50
+    },
+    "win": {
+      "name": "Windows",
+      "infectionPercentageChance": 99
+    },
+    "mac": {
+      "name": "MacOS",
+      "infectionPercentageChance": 1
+    }
+  },
+  "computers": [
+    {
+      "os": "win",
+      "infected": true
+    },
+    {
+      "os": "win"
+    },
+    {
+      "os": "undefined_os"
+    },
+    {
+      "os": "linux"
+    },
+    {
+      "os": "mac"
+    },
+    {
+      "os": "linux"
+    }
+  ],
+  "matrix": [
+    [0, 1, 1, 1, 0, 0],
+    [1, 0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 1],
+    [0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0]
+  ]
+}
