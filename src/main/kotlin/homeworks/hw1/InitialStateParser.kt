@@ -26,9 +26,8 @@ object InitialStateParser {
         return state.computers.mapIndexed { id, config ->
             LocalNetwork.Computer(
                     id,
-                    operatingSystems[config.os] ?: throw OperatingSystemIsNotDefinedException(
-                            config.os
-                    ), config.infected ?: false
+                    operatingSystems[config.os] ?: throw OperatingSystemIsNotDefinedException(config.os),
+                    config.infected ?: false
             )
         }
     }

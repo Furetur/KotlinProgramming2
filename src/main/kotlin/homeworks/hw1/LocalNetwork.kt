@@ -1,11 +1,16 @@
 package homeworks.hw1
 
 import homeworks.hw1.graph.Graph
+import homeworks.hw1.random.IOutcomeRandomizer
+import homeworks.hw1.random.OutcomeRandomizer
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
-import kotlin.random.Random
 
-class LocalNetwork(val computers: List<Computer>, val graph: Graph) {
+class LocalNetwork(
+    val computers: List<Computer>,
+    val graph: Graph,
+    private val outcomeRandomizer: IOutcomeRandomizer = OutcomeRandomizer
+) {
 
     init {
         if (computers.size != graph.vertices.size) {
@@ -34,22 +39,23 @@ class LocalNetwork(val computers: List<Computer>, val graph: Graph) {
     fun isComputerInfected(computer: Computer): Boolean = computersMap[computer]?.isInfected ?: false
 
     fun trySpreadVirus() {
+        val outcome = outcomeRandomizer.getOutcome()
+        if (outcome < 1 || outcome > MAX_PERCENTAGE) {
+            throw IllegalOutcomeException()
+        }
+
         val infectableNodes = getInfectableNodes()
 
         for (node in infectableNodes) {
-            tryInfectNode(node)
+            tryInfectNode(node, outcome)
         }
     }
 
-    private fun tryInfectNode(node: NetworkNode): Boolean {
+    private fun tryInfectNode(node: NetworkNode, outcome: Int): Boolean {
         if (node.isInfected) {
             throw AlreadyInfectedError()
         }
 
-        val outcome = Random.nextInt(
-                1,
-                MAX_PERCENTAGE
-        )
         return if (outcome <= node.computer.os.infectionPercentageChance) {
             node.isInfected = true
             infectedNodes.add(node)
@@ -87,6 +93,8 @@ class LocalNetwork(val computers: List<Computer>, val graph: Graph) {
         val vertex: Graph.Vertex,
         var isInfected: Boolean = computer.isInitiallyInfected
     )
+
+    class IllegalOutcomeException : IllegalArgumentException()
 
     class AlreadyInfectedError : IllegalStateException()
 

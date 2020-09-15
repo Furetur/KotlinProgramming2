@@ -22,7 +22,7 @@ class Graph(matrix: List<List<Int>>) {
     class IllegalMatrixShape : IllegalArgumentException("Matrix must be of square size")
 
     class AdjacencyMatrix(private val matrix: List<List<Int>>) {
-        val size = matrix.size
+        private val size = matrix.size
 
         class IllegalVertexId(id: Int, size: Int) :
             IllegalArgumentException("Vertex id=$id is illegal in adjacency matrix of size $size x $size")

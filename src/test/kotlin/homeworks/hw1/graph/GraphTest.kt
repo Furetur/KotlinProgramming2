@@ -1,5 +1,6 @@
 package homeworks.hw1.graph
 
+import homeworks.hw1.SegmentNetworkGenerator
 import homeworks.hw1.SegmentWindowsNetworkGenerator
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -41,18 +42,18 @@ internal class GraphTest {
 
     @Test
     fun `graphs with same matrices should be equal`() {
-        val matrix1 = SegmentWindowsNetworkGenerator.makeMatrix(100)
+        val matrix1 = SegmentNetworkGenerator.makeMatrix(100)
         val graph1 = Graph(matrix1)
-        val matrix2 = SegmentWindowsNetworkGenerator.makeMatrix(100)
+        val matrix2 = SegmentNetworkGenerator.makeMatrix(100)
         val graph2 = Graph(matrix2)
         assertEquals(graph1, graph2)
     }
 
     @Test
     fun `graphs with different matrices should not be equal`() {
-        val matrix1 = SegmentWindowsNetworkGenerator.makeMatrix(100)
+        val matrix1 = SegmentNetworkGenerator.makeMatrix(100)
         val graph1 = Graph(matrix1)
-        val matrix2 = SegmentWindowsNetworkGenerator.makeMatrix(10)
+        val matrix2 = SegmentNetworkGenerator.makeMatrix(10)
         val graph2 = Graph(matrix2)
         assertNotEquals(graph1, graph2)
     }
