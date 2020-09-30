@@ -1,0 +1,37 @@
+{
+  "gatesCount": 5,
+  "parkingSpacesCount": 3,
+  "cars": [
+    {
+      "arrivalTime": 0,
+      "arrivalGateId": 0,
+      "departureTime": 3,
+      "departureGateId": 3
+    },
+    {
+      "arrivalTime": 0,
+      "arrivalGateId": 1
+    },
+    {
+      "arrivalTime": 1,
+      "arrivalGateId": 4,
+      "departureTime": 10
+    },
+    {
+      "arrivalTime": 1,
+      "arrivalGateId": 2
+    },
+    {
+      "arrivalTime": 4,
+      "arrivalGateId": 0
+    },
+    {
+      "arrivalTime": 5,
+      "arrivalGateId": 0
+    },
+    {
+      "arrivalTime": 15,
+      "arrivalGateId": 10
+    }
+  ]
+}
