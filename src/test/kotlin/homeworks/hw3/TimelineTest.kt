@@ -124,4 +124,11 @@ internal class TimelineTest {
     fun `should correctly construct frames from large wide car history`() {
         testOnSmallWideCarHistory(100, 50, true)
     }
+
+    @Test
+    fun `CarEvent should throw if user attemps to create a depart event from car that never departs`() {
+        assertThrows(Timeline.CarDoesNotDepartException::class.java) {
+            Timeline.CarEvent(Timeline.CarEventType.DEPARTURE, carThatNeverDeparts)
+        }
+    }
 }
