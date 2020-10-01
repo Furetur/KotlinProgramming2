@@ -1,5 +1,8 @@
 package homeworks.hw3
 
+import homeworks.hw3.server.ParkingSystem
+import homeworks.hw3.simulation.ParkingSimulation
+import homeworks.hw3.simulation.ParkingSimulationConfig
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
@@ -16,11 +19,18 @@ fun main() {
         return
     }
     try {
-        val simulation = Json.decodeFromString<ParkingSimulation>(file.readText())
+        val simulationConfig = Json.decodeFromString<ParkingSimulationConfig>(file.readText())
+        val simulation = ParkingSimulation(simulationConfig)
         simulation.run()
     } catch (e: SerializationException) {
-        println("File does not match the needed syntax")
+        println(e.message)
     } catch (e: ParkingSimulation.UnknownGateException) {
+        println(e.message)
+    } catch (e: ParkingSystem.NegativeParkingSpacesException) {
+        println(e.message)
+    } catch (e: ParkingSimulation.NotPositiveGatesCountException) {
+        println(e.message)
+    } catch (e: Car.ArrivalTimeIsEqualToDepartureTimeException) {
         println(e.message)
     }
 }

@@ -1,48 +1,46 @@
 package homeworks.hw3.server
 
 import homeworks.hw3.Car
-import homeworks.hw3.Timeline
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
-import java.util.Stack
 
-class ParkingSystem(private val parkingSpacesCount: Int) : EventsHandler {
-    private val emptySpaces = Stack<Int>()
-    private val carsToSpaces = mutableMapOf<Car, Int>()
-
-    init {
-        for (i in 0 until parkingSpacesCount) {
-            emptySpaces.push(i)
-        }
-    }
-
-    val emptySpacesCount: Int
-        get() = emptySpaces.size
+class ParkingSystem(private val parkingSpacesCount: Int) {
+    private val parkedCars = mutableSetOf<Car>()
 
     val occupiedSpacesCount: Int
-        get() = parkingSpacesCount - emptySpacesCount
+        get() = parkedCars.size
 
-    override fun handleEvent(event: Timeline.CarEvent) {
-        when (event.type) {
-            Timeline.CarEventType.ARRIVAL -> acceptNewCar(event.car)
-            Timeline.CarEventType.DEPARTURE -> handleCarDeparture(event.car)
+    val emptySpacesCount: Int
+        get() = parkingSpacesCount - occupiedSpacesCount
+
+    init {
+        if (parkingSpacesCount < 0) {
+            throw NegativeParkingSpacesException()
         }
     }
 
-    private fun acceptNewCar(car: Car) {
+    fun acceptCar(car: Car) {
         if (emptySpacesCount == 0) {
             throw NoFreeParkingSpacesException()
         }
-        val emptySpace = emptySpaces.pop() ?: throw NoFreeParkingSpacesException()
-        carsToSpaces[car] = emptySpace
+        if (parkedCars.contains(car)) {
+            throw CarIsAlreadyParkedException()
+        }
+        parkedCars.add(car)
     }
 
-    private fun handleCarDeparture(car: Car) {
-        val carSpace = carsToSpaces[car] ?: throw CarWasNotParkedException()
-        emptySpaces.push(carSpace)
+    fun handleCarDeparture(car: Car) {
+        if (!parkedCars.contains(car)) {
+            throw CarWasNotParkedException()
+        }
+        parkedCars.remove(car)
     }
 
-    class NoFreeParkingSpacesException : IllegalStateException()
+    class NegativeParkingSpacesException : IllegalArgumentException("parkingSpacesCount cannot be negative")
 
-    class CarWasNotParkedException : IllegalArgumentException()
+    class NoFreeParkingSpacesException : IllegalStateException("No free parking spaces")
+
+    class CarWasNotParkedException : IllegalArgumentException("Car that was not parked tried to depart")
+
+    class CarIsAlreadyParkedException : IllegalArgumentException("Car tried to park twice")
 }
