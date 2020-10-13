@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import java.lang.IllegalArgumentException
 
 @Serializable
-class Car(
+data class Car(
     val arrivalTime: Int,
     val arrivalGateId: Int,
     val departureTime: Int? = null,
