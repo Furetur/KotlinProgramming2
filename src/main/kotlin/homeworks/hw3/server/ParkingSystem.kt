@@ -1,17 +1,16 @@
 package homeworks.hw3.server
 
-import homeworks.hw3.Car
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
+import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * The main class that is responsible for the server logic
+ * Can be called from multiple threads
+ * Should be installed on the server side
+ */
 class ParkingSystem(private val parkingSpacesCount: Int) {
-    private val parkedCars = mutableSetOf<Car>()
-
-    val occupiedSpacesCount: Int
-        get() = parkedCars.size
-
-    val emptySpacesCount: Int
-        get() = parkingSpacesCount - occupiedSpacesCount
+    private val emptySpacesCount = AtomicInteger(parkingSpacesCount)
 
     init {
         if (parkingSpacesCount < 0) {
@@ -19,28 +18,29 @@ class ParkingSystem(private val parkingSpacesCount: Int) {
         }
     }
 
-    fun acceptCar(car: Car) {
-        if (emptySpacesCount == 0) {
+    // this method should be called from multiple threads
+    fun getEmptySpacesCount() = emptySpacesCount.get()
+
+    fun getOccupiedSpacesCount() = parkingSpacesCount - getEmptySpacesCount()
+
+    // this method should be called from multiple threads
+    fun acceptCar() {
+        val oldValue = emptySpacesCount.getAndUpdate { oldValue -> if (oldValue > 0) oldValue - 1 else 0 }
+        if (oldValue == 0) {
             throw NoFreeParkingSpacesException()
         }
-        if (parkedCars.contains(car)) {
-            throw CarIsAlreadyParkedException()
-        }
-        parkedCars.add(car)
     }
 
-    fun handleCarDeparture(car: Car) {
-        if (!parkedCars.contains(car)) {
-            throw CarWasNotParkedException()
+    // this method should be called from multiple threads
+    fun handleCarDeparture() {
+        emptySpacesCount.getAndUpdate { oldValue ->
+            if (oldValue < parkingSpacesCount) {
+                oldValue + 1
+            } else parkingSpacesCount
         }
-        parkedCars.remove(car)
     }
 
     class NegativeParkingSpacesException : IllegalArgumentException("parkingSpacesCount cannot be negative")
 
     class NoFreeParkingSpacesException : IllegalStateException("No free parking spaces")
-
-    class CarWasNotParkedException : IllegalArgumentException("Car that was not parked tried to depart")
-
-    class CarIsAlreadyParkedException : IllegalArgumentException("Car tried to park twice")
 }

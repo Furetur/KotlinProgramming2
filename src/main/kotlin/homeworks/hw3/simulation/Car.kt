@@ -1,4 +1,4 @@
-package homeworks.hw3
+package homeworks.hw3.simulation
 
 import kotlinx.serialization.Serializable
 import java.lang.IllegalArgumentException

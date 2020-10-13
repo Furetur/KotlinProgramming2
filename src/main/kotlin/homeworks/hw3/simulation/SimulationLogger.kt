@@ -1,14 +1,30 @@
 package homeworks.hw3.simulation
 
+import homeworks.hw3.server.ServerResponse
+
 class SimulationLogger(private val parkingSpacesCount: Int) {
-    fun logEvent(event: ParkingSimulation.CarEvent) {
+    fun logEvent(event: CarEvent, response: ServerResponse) {
+        when (response) {
+            ServerResponse.SUCCESS -> logSuccessfulEvent(event)
+            ServerResponse.NO_FREE_SPACES -> logFailedEvent()
+        }
+    }
+
+    private fun logSuccessfulEvent(event: CarEvent) {
         println(
             when (event.type) {
-                ParkingSimulation.CarEventType.ARRIVAL ->
+                CarEventType.ARRIVAL ->
                     "\tCar entered the parking through the gate id=${event.gateId}"
-                ParkingSimulation.CarEventType.DEPARTURE ->
+                CarEventType.DEPARTURE ->
                     "\tCar left the parking through the gate id=${event.gateId}"
             }
+        )
+    }
+
+    private fun logFailedEvent() {
+        println(
+            "\tCar tried to use the parking but there were no available parking spaces." +
+                    "The car was ignored"
         )
     }
 
@@ -17,7 +33,7 @@ class SimulationLogger(private val parkingSpacesCount: Int) {
     }
 
     fun logTimeframeEnd(emptySpacesCount: Int) {
-        println("END")
-        println("> There are $emptySpacesCount/$parkingSpacesCount available parking spaces")
+        println("END.")
+        println("There are $emptySpacesCount/$parkingSpacesCount free parking spaces")
     }
 }

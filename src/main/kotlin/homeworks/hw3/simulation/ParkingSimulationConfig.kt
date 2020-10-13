@@ -1,6 +1,5 @@
 package homeworks.hw3.simulation
 
-import homeworks.hw3.Car
 import kotlinx.serialization.Serializable
 
 @Serializable

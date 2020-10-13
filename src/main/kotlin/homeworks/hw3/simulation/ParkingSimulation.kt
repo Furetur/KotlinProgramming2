@@ -1,11 +1,9 @@
 package homeworks.hw3.simulation
 
-import homeworks.hw3.Car
-import homeworks.hw3.server.ParkingServer
+import homeworks.hw3.Gate
+import homeworks.hw3.ServerApi
 import homeworks.hw3.server.ParkingSystem
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import homeworks.hw3.server.ServerResponse
 import java.lang.IllegalArgumentException
 
 open class ParkingSimulation(config: ParkingSimulationConfig) {
@@ -13,17 +11,20 @@ open class ParkingSimulation(config: ParkingSimulationConfig) {
     private val gatesCount = config.gatesCount
     private val cars = config.cars
 
-    private val logger = SimulationLogger(parkingSpacesCount)
-    protected val frames = makeFrames()
-
-    private val server = ParkingServer(parkingSpacesCount)
-
     init {
         if (gatesCount <= 0) {
-            throw NotPositiveGatesCountException()
+            throw NegativeGatesCountException()
         }
         validateCars()
     }
+
+    private val logger = SimulationLogger(parkingSpacesCount)
+
+    protected val frames = makeFrames()
+    private val system = ParkingSystem(parkingSpacesCount)
+    private val serverApi = ServerApi(system)
+
+    private val gates = List(gatesCount) { Gate(serverApi) }
 
     private fun isGateDefined(gateId: Int): Boolean = gateId in 0 until gatesCount
 
@@ -40,13 +41,8 @@ open class ParkingSimulation(config: ParkingSimulationConfig) {
     }
 
     private fun makeFrames(): List<Timeframe> {
-        val arrivalEvents = cars.map { CarEvent(CarEventType.ARRIVAL, it) }
-        val departureEvents = cars.filter { it.departureTime != null }.map {
-            CarEvent(
-                CarEventType.DEPARTURE,
-                it
-            )
-        }
+        val arrivalEvents = cars.map { CarEvent.getCarArrivalEvent(it) }
+        val departureEvents = cars.mapNotNull { CarEvent.getCarDepartureEvent(it) }
         val events = arrivalEvents + departureEvents
         val eventsGroupedByTime = mutableMapOf<Int, MutableSet<CarEvent>>()
         for (event in events) {
@@ -60,64 +56,36 @@ open class ParkingSimulation(config: ParkingSimulationConfig) {
         return eventsGroupedByTime.entries.map { Timeframe(it.key, it.value) }.sortedBy { it.time }
     }
 
-    @ObsoleteCoroutinesApi
     fun run() {
         for (frame in frames) {
             logger.logTimeframeStart(frame.time)
             frame.run()
-            logger.logTimeframeEnd(server.emptySpacesCount)
+            logger.logTimeframeEnd(serverApi.getEmptySpacesCount())
         }
     }
-
-    @ObsoleteCoroutinesApi
-    private suspend fun handleEvent(event: CarEvent) {
-        when (event.type) {
-            CarEventType.ARRIVAL -> server.acceptCar(event.car)
-            CarEventType.DEPARTURE -> server.handleCarDeparture(event.car)
-        }
-    }
-
-    enum class CarEventType {
-        ARRIVAL,
-        DEPARTURE
-    }
-
-    data class CarEvent(val type: CarEventType, val car: Car) {
-        val time: Int = when (type) {
-            CarEventType.ARRIVAL -> car.arrivalTime
-            CarEventType.DEPARTURE -> car.departureTime ?: throw CarDoesNotDepartException(car)
-        }
-        val gateId = when (type) {
-            CarEventType.ARRIVAL -> car.arrivalGateId
-            CarEventType.DEPARTURE -> car.departureGateId ?: car.arrivalGateId
-        }
-    }
-
-    class CarDoesNotDepartException(car: Car) : IllegalArgumentException(
-        "Tried to create a departure event for car which arrives at time=${car.arrivalTime} " +
-                "at gate=${car.arrivalGateId} but does not departure"
-    )
 
     inner class Timeframe(val time: Int, val events: Set<CarEvent>) {
-        @ObsoleteCoroutinesApi
-        fun run() = runBlocking {
+        fun run() {
             for (event in events) {
-                launch {
-                    try {
-                        handleEvent(event)
-                        logger.logEvent(event)
-                    } catch (e: ParkingSystem.NoFreeParkingSpacesException) {
-                        println(
-                            "\tCar tried to use the parking but there were no available parking spaces." +
-                                    "The car was ignored"
-                        )
-                    }
-                }
+                val response = passEventToGate(event)
+                logger.logEvent(event, response)
+            }
+        }
+
+        private fun passEventToGate(event: CarEvent): ServerResponse {
+            val gate = if (event.gateId in gates.indices) {
+                gates[event.gateId]
+            } else {
+                throw UnknownGateException(event.gateId)
+            }
+            return when (event.type) {
+                CarEventType.ARRIVAL -> gate.acceptNewCar()
+                CarEventType.DEPARTURE -> gate.handleCarDeparture()
             }
         }
     }
 
-    class NotPositiveGatesCountException : IllegalArgumentException("gatesCount must be positive")
+    class NegativeGatesCountException : IllegalArgumentException("gatesCount must be positive")
 
     class UnknownGateException(gateId: Int) : IllegalArgumentException("Gate with id=$gateId is not defined")
 }

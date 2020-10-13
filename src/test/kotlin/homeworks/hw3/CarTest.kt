@@ -1,5 +1,6 @@
 package homeworks.hw3
 
+import homeworks.hw3.simulation.Car
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

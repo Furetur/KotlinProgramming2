@@ -1,9 +1,10 @@
 package homeworks.hw3
 
-import homeworks.hw3.simulation.ParkingSimulation
+import homeworks.hw3.simulation.Car
+import homeworks.hw3.simulation.CarEvent
 
 object TimeframesWithCarsGenerator {
-    data class TimeframesWithCars(val framesEvents: List<Set<ParkingSimulation.CarEvent>>, val cars: List<Car>)
+    data class TimeframesWithCars(val framesEvents: List<Set<CarEvent>>, val cars: List<Car>)
 
     private fun generateCarLayer(time: Int, carsCount: Int, willEveryCarLeave: Boolean, gateId: Int): List<Car> =
         List(carsCount) {
@@ -17,14 +18,13 @@ object TimeframesWithCarsGenerator {
     fun generateTimeframesWithCars(framesCount: Int, carsCount: Int, carsOnceDepart: Boolean): TimeframesWithCars {
         var prevCars = generateCarLayer(0, carsCount, true, 0)
         val allCars = prevCars.toMutableList()
-        val startingFrameEvents = prevCars.map { EventsGenerator.makeArrivalEvent(it) }.toSet()
+        val startingFrameEvents = prevCars.map { CarEvent.getCarArrivalEvent(it) }.toSet()
         val allFramesEvents = mutableListOf(startingFrameEvents)
         for (i in 1 until framesCount) {
             val currentCarLayer = generateCarLayer(i, carsCount, carsOnceDepart && i != framesCount - 1, i)
-            val currentFrameEvents =
-                (currentCarLayer.map { EventsGenerator.makeArrivalEvent(it) } + prevCars.mapNotNull {
-                    EventsGenerator.makeDepartureEvent(it)
-                }).toSet()
+            val currentArrivalEvents = currentCarLayer.map { CarEvent.getCarArrivalEvent(it) }.toSet()
+            val currentDepartureEvents = prevCars.mapNotNull { CarEvent.getCarDepartureEvent(it) }.toSet()
+            val currentFrameEvents = currentArrivalEvents + currentDepartureEvents
             allFramesEvents.add(currentFrameEvents)
             allCars.addAll(currentCarLayer)
             prevCars = currentCarLayer
